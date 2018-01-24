@@ -2,6 +2,7 @@ package com.example.repository;
 
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,32 +12,36 @@ import java.util.Map;
 @Component
 public class UserRepository {
 
-    private Map<Integer, String> database = new HashMap<>();
+    private Map<String, UserTable> database = new HashMap<>();
 
     public UserRepository()  {
-        database.put(1, "sendEmail");
-        database.put(2, "callPhone");
-        database.put(3, "sendSMS");
     }
 
-    public String getAt(Integer key) throws Exception{
-        if (database.containsKey(key)) {
-            return database.get(key);
-        }
-        else {
-            //key does not exists
-            throw new Exception("The key : %i does not exists !" + key);
-        }
+    @PostConstruct
+    void init() {
+        CreateTable("com.example.mypackage.Communicator");
     }
 
-    public void setAt(Integer key, String value ) throws Exception {
-        if (!database.containsKey(key)) {
-            database.put(key, value);
+    public boolean CreateTable(String tableName) {
+
+        UserTable table = new UserTable();
+        try {
+            table.Create(tableName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-        else {
-            //key already exists
-            throw new Exception("The key : %i already exists !" + key);
-        }
+
+        database.put(tableName, table);
+
+        return true;
+
     }
+
+    public UserTable getTable(String tableName) {
+        return database.get(tableName);
+    }
+
+
 
 }
